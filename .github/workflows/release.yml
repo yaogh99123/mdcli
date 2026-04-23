@@ -1,0 +1,80 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version_bump:
+        description: "Version bump type (minor, patch)"
+        type: choice
+        required: true
+        default: "patch"
+        options:
+          - minor
+          - patch
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  # 任务1：仅处理版本号计算和打标签 (仅手动触发时执行)
+  create-tag:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Git Tagging
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # 获取最近的一个 tag，如果没有则从 v0.0.0 开始
+          LATEST_TAG=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "v0.0.0")
+          echo "Latest tag: $LATEST_TAG"
+
+          # 鲁棒性处理：强制提取前三位 (Major.Minor.Patch)，避免 v0.25.2.0 这种导致数学错误
+          CLEAN_VERSION=$(echo ${LATEST_TAG#v} | cut -d. -f1-3)
+          IFS='.' read -r major minor patch <<< "$CLEAN_VERSION"
+
+          # 确保变量不为空，防止解析失败
+          major=${major:-0}; minor=${minor:-0}; patch=${patch:-0}
+
+          # 根据输入计算新版本
+          if [[ "${{ github.event.inputs.version_bump }}" == "minor" ]]; then
+            minor=$((minor + 1))
+            patch=0
+          else
+            patch=$((patch + 1))
+          fi
+
+          NEW_TAG="v$major.$minor.$patch"
+          echo "New tag: $NEW_TAG"
+
+          # 打标签并推送
+          git tag "$NEW_TAG"
+          git push origin "$NEW_TAG"
+
+  # 任务2：仅处理构建和发布 (只要有新的 tag 推送就会执行)
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+          cache: true
+      - uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: v2
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}

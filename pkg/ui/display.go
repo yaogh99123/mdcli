@@ -177,6 +177,7 @@ func InteractiveSearch(cm *commands.CommandManager, initialQuery string) error {
 			"--height=60%",
 			"--prompt=搜索: ",
 			"--bind=esc:print(ESC)+abort",
+			"--bind=ctrl-c:print(CTRL-C)+abort",
 		}
 		if currentQuery != "" {
 			fzfArgs = append(fzfArgs, "--query", currentQuery)
@@ -193,20 +194,27 @@ func InteractiveSearch(cm *commands.CommandManager, initialQuery string) error {
 		code, err := fzf.Run(options)
 		if code == 130 {
 			// 区分 Esc 和 Ctrl+C
+			// 此时 fzf 已停止，我们直接尝试从 outputChan 读取 print 的内容
+			// 使用 select 防止潜在的阻塞（虽然按理说 print 应该已经完成了）
 			select {
 			case out := <-outputChan:
 				if out == "ESC" {
 					return fmt.Errorf("ESC")
 				}
+				if out == "CTRL-C" {
+					os.Exit(0)
+				}
 			default:
+				// 如果没有读到标识，默认按 Ctrl+C 处理直接退出
+				os.Exit(0)
 			}
-			// 如果不是 Esc 触发的 130 (即 Ctrl+C)，则直接退出
-			return nil
 		}
+
 		if err != nil {
 			return fmt.Errorf("fzf 运行失败 (code %d): %v", code, err)
 		}
 
+		// 处理正常选择
 		select {
 		case selected := <-outputChan:
 			if selected != "" {
@@ -214,15 +222,11 @@ func InteractiveSearch(cm *commands.CommandManager, initialQuery string) error {
 				if len(parts) > 0 {
 					name := parts[0]
 					ShowMarkdown(cm, name)
-					// 查看完后，清空查询词以便下次看到完整列表，或者保留它？
-					// 这里我们选择清空查询词，让用户重新输入
 					currentQuery = ""
 				}
-			} else {
-				// 如果没有选择（例如按了 Esc 但返回码不是 130）
-				return nil
 			}
 		default:
+			// 如果没有任何输出，可能是非预期的退出，直接结束
 			return nil
 		}
 	}
