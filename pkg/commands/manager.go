@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"mdcli/pkg/i18n"
 )
 
 var (
@@ -64,7 +66,7 @@ func NewCommandManagerWithSource(sourcePath string) (*CommandManager, error) {
 		if err == nil {
 			err = json.Unmarshal(data, &cm.commands)
 			if err == nil && len(cm.commands) > 0 {
-				fmt.Printf("已从索引文件加载 %d 个条目\n", len(cm.commands))
+				fmt.Printf(i18n.T("load_from_index")+"\n", len(cm.commands))
 				return cm, nil
 			}
 		}
@@ -74,7 +76,7 @@ func NewCommandManagerWithSource(sourcePath string) (*CommandManager, error) {
 	if sourcePath != "" {
 		err := cm.scanDirectory(sourcePath)
 		if err == nil && len(cm.commands) > 0 {
-			fmt.Printf("已从目录扫描加载 %d 个 Markdown 文件\n", len(cm.commands))
+			fmt.Printf(i18n.T("load_from_scan")+"\n", len(cm.commands))
 			return cm, nil
 		}
 	}
@@ -84,12 +86,12 @@ func NewCommandManagerWithSource(sourcePath string) (*CommandManager, error) {
 		err := json.Unmarshal(embeddedDataJSON, &cm.commands)
 		if err == nil && len(cm.commands) > 0 {
 			cm.localSource = "" // 标记为嵌入模式
-			fmt.Printf("已加载 %d 个嵌入的内置命令\n", len(cm.commands))
+			fmt.Printf(i18n.T("load_from_embed")+"\n", len(cm.commands))
 			return cm, nil
 		}
 	}
 
-	return nil, fmt.Errorf("未能在 %s 找到有效 Markdown 数据 (条目数为 0)", sourcePath)
+	return nil, fmt.Errorf(i18n.T("data_not_found"), sourcePath)
 }
 
 // scanDirectory 扫描目录下的所有 .md 文件
@@ -105,14 +107,14 @@ func (cm *CommandManager) scanDirectory(dir string) error {
 		}
 		if !info.IsDir() && filepath.Ext(path) == ".md" {
 			name := strings.TrimSuffix(info.Name(), ".md")
-			// 避免重复或特殊文件
+			// 避免重复运行特殊文件
 			if name == "" || strings.HasPrefix(name, ".") {
 				return nil
 			}
 			cm.commands[name] = Command{
 				Name:        name,
 				Path:        path,
-				Description: fmt.Sprintf("文件: %s", path),
+				Description: fmt.Sprintf(i18n.T("file_prefix"), path),
 			}
 		}
 		return nil
@@ -142,7 +144,7 @@ func (cm *CommandManager) GetCommands() map[string]Command {
 func (cm *CommandManager) GetDetail(name string) (string, error) {
 	cmd, exists := cm.commands[name]
 	if !exists {
-		return "", fmt.Errorf("命令 '%s' 不存在", name)
+		return "", fmt.Errorf(i18n.T("cmd_not_found"), name)
 	}
 
 	var content []byte
@@ -170,7 +172,7 @@ func (cm *CommandManager) GetDetail(name string) (string, error) {
 	}
 
 	if err != nil {
-		return "", fmt.Errorf("读取文档失败: %v (路径: %s)", err, mdPath)
+		return "", fmt.Errorf(i18n.T("read_doc_failed"), err, mdPath)
 	}
 
 	return cm.formatContent(cmd, content), nil

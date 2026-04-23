@@ -34,6 +34,13 @@ var translations = map[Language]map[string]string{
 		"loaded_project":     "已加载项目: ",
 		"init_failed":        "初始化失败",
 		"config_no_projects": "配置文件中没有项目",
+		"load_from_index":    "已从索引文件加载 %d 个条目",
+		"load_from_scan":     "已从目录扫描加载 %d 个 Markdown 文件",
+		"load_from_embed":    "已加载 %d 个嵌入的内置命令",
+		"data_not_found":     "未能在 %s 找到有效 Markdown 数据 (条目数为 0)",
+		"file_prefix":        "文件: %s",
+		"cmd_not_found":      "命令 '%s' 不存在",
+		"read_doc_failed":    "读取文档失败: %v (路径: %s)",
 	},
 	EN: {
 		"app_title":          "      MDCLI Project Selector",
@@ -54,6 +61,13 @@ var translations = map[Language]map[string]string{
 		"loaded_project":     "Project loaded: ",
 		"init_failed":        "Initialization failed",
 		"config_no_projects": "No projects found in config",
+		"load_from_index":    "Loaded %d items from index file",
+		"load_from_scan":     "Loaded %d Markdown files from directory scan",
+		"load_from_embed":    "Loaded %d embedded internal commands",
+		"data_not_found":     "Could not find valid Markdown data in %s (0 entries)",
+		"file_prefix":        "File: %s",
+		"cmd_not_found":      "Command '%s' not found",
+		"read_doc_failed":    "Failed to read document: %v (Path: %s)",
 	},
 }
 

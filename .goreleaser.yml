@@ -58,4 +58,4 @@ brews:
       name: homebrew-tap
     directory: Formula
     homepage: "https://github.com/yaogh99123/homebrew-tap/"
-    description: "A simple terminal UI for docker, written in Go"
+    description: "A high-efficiency, minimalist CLI for Markdown preview and management"
