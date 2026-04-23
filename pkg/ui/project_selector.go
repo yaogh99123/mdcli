@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"mdcli/pkg/config"
+	"mdcli/pkg/i18n"
 )
 
 // 定义颜色
@@ -25,11 +26,11 @@ const (
 // SelectProject 展示项目列表供用户选择（基于文本美化）
 func SelectProject(cfg *config.Config) (*config.Project, error) {
 	if len(cfg.Projects) == 0 {
-		return nil, fmt.Errorf("配置文件中没有项目")
+		return nil, fmt.Errorf(i18n.T("config_no_projects"))
 	}
 
 	fmt.Printf("%s========================================%s\n", ColorBlue, ColorNC)
-	fmt.Printf("%s      MDCLI 项目选择管理器%s\n", ColorBlue, ColorNC)
+	fmt.Printf("%s%s%s\n", ColorBlue, i18n.T("app_title"), ColorNC)
 	fmt.Printf("%s========================================%s\n", ColorBlue, ColorNC)
 	fmt.Println("")
 	for i, p := range cfg.Projects {
@@ -43,13 +44,13 @@ func SelectProject(cfg *config.Config) (*config.Project, error) {
 
 	fmt.Println("")
 	// 插入 mdcli 相关的提示信息
-	fmt.Println(ColorYellow + " 常用操作：" + ColorYellow + ColorBold + "1-" + strconv.Itoa(len(cfg.Projects)) + "." + ColorYellow + "选择项目, " + ColorBold + "Enter." + ColorYellow + "进入搜索, " + ColorYellow + "q." + ColorYellow + "退出")
-	fmt.Println(ColorYellow + " 快捷指令：" + ColorYellow + "[" + ColorBold + "Enter" + ColorYellow + "]查看详情, [" + ColorBold + "/" + ColorYellow + "]模糊搜索, [" + ColorBold + "Esc" + ColorYellow + "]重置查询")
+	fmt.Println(ColorYellow + i18n.T("common_ops") + ColorYellow + ColorBold + "1-" + strconv.Itoa(len(cfg.Projects)) + "." + ColorYellow + i18n.T("select_project_op") + ", " + ColorBold + "Enter." + ColorYellow + i18n.T("enter_search") + ", " + ColorYellow + "q." + ColorYellow + i18n.T("exit_hint"))
+	fmt.Println(ColorYellow + i18n.T("shortcut_keys") + ColorYellow + "[" + ColorBold + "Enter" + ColorYellow + "]" + i18n.T("view_details") + ", [" + ColorBold + "/" + ColorYellow + "]" + i18n.T("fuzzy_search") + ", [" + ColorBold + "Esc" + ColorYellow + "]" + i18n.T("reset_query"))
 
 	fmt.Println("")
 	fmt.Println(ColorCyan + "--------------------------------------------------------" + ColorReset)
 	fmt.Println("")
-	fmt.Print(ColorCyan + ColorBold + "请选择项目编号 " + ColorReset + "[1-" + strconv.Itoa(len(cfg.Projects)) + "] (q 退出): ")
+	fmt.Print(ColorCyan + ColorBold + i18n.T("select_project") + " " + ColorReset + "[1-" + strconv.Itoa(len(cfg.Projects)) + "] (" + i18n.T("exit_hint") + "): ")
 
 	reader := bufio.NewReader(os.Stdin)
 	input, _ := reader.ReadString('\n')
@@ -65,11 +66,11 @@ func SelectProject(cfg *config.Config) (*config.Project, error) {
 
 	idx, err := strconv.Atoi(input)
 	if err != nil || idx < 1 || idx > len(cfg.Projects) {
-		return nil, fmt.Errorf("无效的选择: %s", input)
+		return nil, fmt.Errorf("%s: %s", i18n.T("invalid_selection"), input)
 	}
 
 	selected := cfg.Projects[idx-1]
-	fmt.Printf("\n%s已加载项目: %s%s\n", ColorBlue+ColorBold, selected.Name, ColorReset)
+	fmt.Printf("\n%s%s%s%s\n", ColorBlue+ColorBold, i18n.T("loaded_project"), selected.Name, ColorReset)
 
 	return &selected, nil
 }

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"mdcli/pkg/commands"
+	"mdcli/pkg/i18n"
 	"mdcli/pkg/utils"
 
 	"github.com/charmbracelet/glamour"
@@ -33,7 +34,7 @@ func ShowMarkdown(cm *commands.CommandManager, name string) error {
 func ShowFile(filePath string) error {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
-		return fmt.Errorf("读取文件失败: %v", err)
+		return fmt.Errorf(i18n.T("init_failed")+": %v", err)
 	}
 	return RenderAndShow(string(data))
 }
@@ -126,11 +127,11 @@ func ShowRaw(cm *commands.CommandManager, name string) error {
 // ShowList 显示命令列表
 func ShowList(results []commands.Command) {
 	if len(results) == 0 {
-		fmt.Println("未找到匹配的命令")
+		fmt.Println(i18n.T("no_commands_found"))
 		return
 	}
 
-	fmt.Printf("\n找到 %d 个命令:\n", len(results))
+	fmt.Printf("\n"+i18n.T("found_commands")+"\n", len(results))
 	fmt.Println(strings.Repeat("=", 90))
 
 	sort.Slice(results, func(i, j int) bool {
@@ -175,7 +176,7 @@ func InteractiveSearch(cm *commands.CommandManager, initialQuery string) error {
 		fzfArgs := []string{
 			"--reverse",
 			"--height=60%",
-			"--prompt=搜索: ",
+			"--prompt=" + i18n.T("search_prompt"),
 			"--bind=esc:print(ESC)+abort",
 			"--bind=ctrl-c:print(CTRL-C)+abort",
 		}
@@ -185,7 +186,7 @@ func InteractiveSearch(cm *commands.CommandManager, initialQuery string) error {
 
 		options, err := fzf.ParseOptions(true, fzfArgs)
 		if err != nil {
-			return fmt.Errorf("fzf 初始化失败: %v", err)
+			return fmt.Errorf(i18n.T("init_failed")+": %v", err)
 		}
 
 		options.Input = inputChan
@@ -211,7 +212,7 @@ func InteractiveSearch(cm *commands.CommandManager, initialQuery string) error {
 		}
 
 		if err != nil {
-			return fmt.Errorf("fzf 运行失败 (code %d): %v", code, err)
+			return fmt.Errorf(i18n.T("init_failed")+" (code %d): %v", code, err)
 		}
 
 		// 处理正常选择

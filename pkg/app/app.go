@@ -7,17 +7,24 @@ import (
 
 	"mdcli/pkg/commands"
 	"mdcli/pkg/config"
+	"mdcli/pkg/i18n"
 	"mdcli/pkg/ui"
 )
 
 // Run 运行应用程序
 func Run() {
 	// 加载配置
-	cfg, err := config.LoadConfig()
+	cfg, path, err := config.LoadConfig()
 	if err != nil {
-		log.Printf("加载配置文件失败: %v", err)
+		log.Printf(i18n.T("init_failed")+": %v", err)
 	} else if cfg != nil {
 		ui.SetGlobalStyle(cfg.Style)
+		if cfg.Lang != "" {
+			i18n.SetLanguage(cfg.Lang)
+		}
+		if path != "" {
+			fmt.Printf("%s Loaded config: %s %s\n", "\033[90m", path, "\033[0m")
+		}
 	}
 
 	var cm *commands.CommandManager
@@ -29,27 +36,27 @@ func Run() {
 			if cfg != nil && len(cfg.Projects) > 0 {
 				project, err := ui.SelectProject(cfg)
 				if err != nil {
-					log.Fatalf("选择项目失败: %v", err)
+					log.Fatalf(i18n.T("init_failed")+": %v", err)
 				}
 
 				if project == nil {
 					// 用户直接按回车，使用默认管理器
 					cm, err = commands.NewCommandManager()
 					if err != nil {
-						log.Fatalf("初始化失败: %v", err)
+						log.Fatalf(i18n.T("init_failed")+": %v", err)
 					}
 				} else {
 					// 使用选中的项目路径初始化管理器
 					cm, err = commands.NewCommandManagerWithSource(project.Path)
 					if err != nil {
-						log.Fatalf("加载项目 '%s' 失败: %v", project.Name, err)
+						log.Fatalf(i18n.T("init_failed")+" '%s': %v", project.Name, err)
 					}
 				}
 			} else {
 				// 没有配置项目，使用默认管理器
 				cm, err = commands.NewCommandManager()
 				if err != nil {
-					log.Fatalf("初始化失败: %v", err)
+					log.Fatalf(i18n.T("init_failed")+": %v", err)
 				}
 			}
 
@@ -57,7 +64,7 @@ func Run() {
 			err = ui.InteractiveSearch(cm, "")
 			if err != nil && err.Error() == "ESC" {
 				if cfg != nil && len(cfg.Projects) > 0 {
-					fmt.Println("\n返回项目选择...")
+					fmt.Println("\n" + i18n.T("back_to_projects"))
 					continue
 				}
 			}
