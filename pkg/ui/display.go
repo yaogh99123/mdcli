@@ -166,7 +166,7 @@ func InteractiveSearch(cm *commands.CommandManager, initialQuery string) error {
 		go func() {
 			for _, name := range names {
 				cmd := cmds[name]
-				inputChan <- fmt.Sprintf("%-20s - %s", cmd.Name, cmd.Description)
+				inputChan <- fmt.Sprintf("%s\t%s", cmd.Name, cmd.Description)
 			}
 			close(inputChan)
 		}()
@@ -179,6 +179,7 @@ func InteractiveSearch(cm *commands.CommandManager, initialQuery string) error {
 			"--prompt=" + i18n.T("search_prompt"),
 			"--bind=esc:print(ESC)+abort",
 			"--bind=ctrl-c:print(CTRL-C)+abort",
+			"--delimiter=\t",
 		}
 		if currentQuery != "" {
 			fzfArgs = append(fzfArgs, "--query", currentQuery)
@@ -219,9 +220,9 @@ func InteractiveSearch(cm *commands.CommandManager, initialQuery string) error {
 		select {
 		case selected := <-outputChan:
 			if selected != "" {
-				parts := strings.Fields(selected)
+				parts := strings.Split(selected, "\t")
 				if len(parts) > 0 {
-					name := parts[0]
+					name := strings.TrimSpace(parts[0])
 					ShowMarkdown(cm, name)
 					currentQuery = ""
 				}
