@@ -44,7 +44,7 @@ func SelectProject(cfg *config.Config) (*config.Project, error) {
 
 	fmt.Println("")
 	// 插入 mdcli 相关的提示信息
-	fmt.Println(ColorYellow + i18n.T("common_ops") + ColorYellow + ColorBold + "1-" + strconv.Itoa(len(cfg.Projects)) + "." + ColorYellow + i18n.T("select_project_op") + ", " + ColorBold + "Enter." + ColorYellow + i18n.T("enter_search") + ", " + ColorYellow + "q." + ColorYellow + i18n.T("exit_hint"))
+	fmt.Println(ColorYellow + i18n.T("common_ops") + ColorYellow + ColorBold + "1-" + strconv.Itoa(len(cfg.Projects)) + "." + ColorYellow + i18n.T("select_project_op") + ", " + ColorBold + "Enter." + ColorYellow + i18n.T("enter_search") + ", " + ColorYellow + i18n.T("exit_hint"))
 	fmt.Println(ColorYellow + i18n.T("shortcut_keys") + ColorYellow + "[" + ColorBold + "Enter" + ColorYellow + "]" + i18n.T("view_details") + ", [" + ColorBold + "/" + ColorYellow + "]" + i18n.T("fuzzy_search") + ", [" + ColorBold + "Esc" + ColorYellow + "]" + i18n.T("reset_query"))
 
 	fmt.Println("")
@@ -56,7 +56,7 @@ func SelectProject(cfg *config.Config) (*config.Project, error) {
 	input, _ := reader.ReadString('\n')
 	input = strings.TrimSpace(input)
 
-	if input == "q" || input == "Q" {
+	if input == "q" || input == "Q" || input == "0" {
 		os.Exit(0)
 	}
 
