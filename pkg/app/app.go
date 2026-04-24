@@ -14,6 +14,12 @@ import (
 	"mdcli/pkg/utils"
 )
 
+var (
+	Version   = "dev"
+	Commit    = "none"
+	BuildDate = "unknown"
+)
+
 // Run 运行应用程序
 func Run() {
 	// 监听系统信号，确保 Ctrl+C 始终有效
@@ -142,7 +148,11 @@ func Run() {
 		fmt.Println(i18n.T("update_success"))
 
 	case "--version", "-V":
-		fmt.Println("mdcli version 2.0")
+		fmt.Printf("mdcli version %s\n", Version)
+		if Commit != "none" {
+			fmt.Printf("Commit: %s\n", Commit)
+			fmt.Printf("BuildDate: %s\n", BuildDate)
+		}
 
 	default:
 		// 默认作为搜索关键词进入交互式模式

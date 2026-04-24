@@ -14,9 +14,13 @@ NC='\033[0m' # No Color
 
 # 项目信息
 APP_NAME="mdcli"
-VERSION="2.0"
+VERSION="1.0"
 BUILD_DIR="build"
 SOURCE_FILE="."
+
+# 获取 Git 信息
+GIT_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "none")
+BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
 # 打印带颜色的信息
 print_info() {
@@ -104,7 +108,7 @@ build_binary() {
     # 设置环境变量并编译
     GOOS=$os GOARCH=$arch CGO_ENABLED=0 go build \
         -mod=vendor \
-        -ldflags="-s -w" \
+        -ldflags="-s -w -X mdcli/pkg/app.Version=v${VERSION} -X mdcli/pkg/app.Commit=${GIT_COMMIT} -X mdcli/pkg/app.BuildDate=${BUILD_DATE}" \
         -o "$output_file" \
         "$SOURCE_FILE"
     

@@ -22,7 +22,7 @@ builds:
       - 6
       - 7
     ldflags:
-      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.buildSource=binaryRelease
+      - -s -w -X mdcli/pkg/app.Version={{.Version}} -X mdcli/pkg/app.Commit={{.Commit}} -X mdcli/pkg/app.BuildDate={{.Date}}
 
 # 归档配置 (已修复文件名冲突问题)
 archives:
