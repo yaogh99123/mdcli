@@ -65,8 +65,8 @@ func Run() {
 			if err != nil && err.Error() == "ESC" {
 				if cfg != nil && len(cfg.Projects) > 0 {
 					fmt.Println("\n" + i18n.T("back_to_projects"))
-					continue
 				}
+				continue
 			}
 			break
 		}

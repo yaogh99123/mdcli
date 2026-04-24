@@ -5,6 +5,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"time"
 
 	"mdcli/pkg/commands"
 	"mdcli/pkg/i18n"
@@ -195,21 +196,19 @@ func InteractiveSearch(cm *commands.CommandManager, initialQuery string) error {
 
 		code, err := fzf.Run(options)
 		if code == 130 {
-			// 区分 Esc 和 Ctrl+C
-			// 此时 fzf 已停止，我们直接尝试从 outputChan 读取 print 的内容
-			// 使用 select 防止潜在的阻塞（虽然按理说 print 应该已经完成了）
+			// 尝试从 outputChan 读取 print 的内容
+			out := ""
 			select {
-			case out := <-outputChan:
-				if out == "ESC" {
-					return fmt.Errorf("ESC")
-				}
-				if out == "CTRL-C" {
-					os.Exit(0)
-				}
-			default:
-				// 如果没有读到标识，默认按 Ctrl+C 处理直接退出
+			case out = <-outputChan:
+			case <-time.After(50 * time.Millisecond):
+				// 超时未读到，通常是由于 fzf 异常退出或没有绑定 print 的情况
+			}
+
+			if out == "CTRL-C" {
 				os.Exit(0)
 			}
+			// 其它情况（ESC 或超时）均返回 ESC 错误，让上层循环处理
+			return fmt.Errorf("ESC")
 		}
 
 		if err != nil {
