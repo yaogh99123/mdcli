@@ -11,6 +11,7 @@ import (
 	"mdcli/pkg/config"
 	"mdcli/pkg/i18n"
 	"mdcli/pkg/ui"
+	"mdcli/pkg/utils"
 )
 
 // Run 运行应用程序
@@ -32,9 +33,18 @@ func Run() {
 		if cfg.Lang != "" {
 			i18n.SetLanguage(cfg.Lang)
 		}
-		// if path != "" {
-		// 	fmt.Printf("%s Loaded config: %s %s\n", "\033[90m", path, "\033[0m")
-		// }
+	}
+
+	// 检查默认项目是否存在，如果不存在则提示初始化
+	defaultPath := config.GetDefaultLinuxCommandPath()
+	if _, err := os.Stat(defaultPath); os.IsNotExist(err) {
+		fmt.Printf("%s%s%s\n", "\033[33m", i18n.T("default_project_missing"), "\033[0m")
+		err := utils.DownloadLinuxCommand(defaultPath)
+		if err != nil {
+			fmt.Printf("%s%s: %v%s\n", "\033[31m", i18n.T("init_failed"), err, "\033[0m")
+		} else {
+			fmt.Printf("%s%s%s\n", "\033[32m", i18n.T("init_success"), "\033[0m")
+		}
 	}
 
 	var cm *commands.CommandManager
@@ -43,32 +53,16 @@ func Run() {
 	if len(os.Args) < 2 {
 		for {
 			// 如果有多个项目，进入项目选择界面
-			if cfg != nil && len(cfg.Projects) > 0 {
 				project, err := ui.SelectProject(cfg)
 				if err != nil {
 					log.Fatalf(i18n.T("init_failed")+": %v", err)
 				}
 
-				if project == nil {
-					// 用户直接按回车，使用默认管理器
-					cm, err = commands.NewCommandManager()
-					if err != nil {
-						log.Fatalf(i18n.T("init_failed")+": %v", err)
-					}
-				} else {
-					// 使用选中的项目路径初始化管理器
-					cm, err = commands.NewCommandManagerWithSource(project.Path)
-					if err != nil {
-						log.Fatalf(i18n.T("init_failed")+" '%s': %v", project.Name, err)
-					}
-				}
-			} else {
-				// 没有配置项目，使用默认管理器
-				cm, err = commands.NewCommandManager()
+				// 使用选中的项目路径初始化管理器
+				cm, err = commands.NewCommandManagerWithSource(project.Path)
 				if err != nil {
-					log.Fatalf(i18n.T("init_failed")+": %v", err)
+					log.Fatalf(i18n.T("init_failed")+" '%s': %v", project.Name, err)
 				}
-			}
 
 			// 进入交互式搜索模式
 			err = ui.InteractiveSearch(cm, "")
@@ -83,10 +77,14 @@ func Run() {
 		return
 	}
 
-	// 如果有参数，暂时使用默认管理器处理（或者您可以指定通过参数选择项目）
-	cm, err = commands.NewCommandManager()
-	if err != nil {
-		log.Fatalf("初始化失败: %v", err)
+	// 如果有参数，默认使用第一个项目（Linux Command）
+	if cfg != nil && len(cfg.Projects) > 0 {
+		cm, err = commands.NewCommandManagerWithSource(cfg.Projects[0].Path)
+		if err != nil {
+			log.Fatalf("初始化失败: %v", err)
+		}
+	} else {
+		log.Fatalf("没有可用的项目配置")
 	}
 
 	command := os.Args[1]
@@ -135,6 +133,14 @@ func Run() {
 	case "help", "h", "-h", "--help":
 		PrintUsage()
 
+	case "update", "init":
+		defaultPath := config.GetDefaultLinuxCommandPath()
+		err := utils.DownloadLinuxCommand(defaultPath)
+		if err != nil {
+			log.Fatalf(i18n.T("update_failed")+": %v", err)
+		}
+		fmt.Println(i18n.T("update_success"))
+
 	case "--version", "-V":
 		fmt.Println("mdcli version 2.0")
 
@@ -168,6 +174,7 @@ func PrintUsage() {
 	fmt.Println("  mdcli [keyword]   Enter interactive search mode (default).")
 	fmt.Println("  mdcli view <cmd>  Show details of a specific command.")
 	fmt.Println("  mdcli file <path> View a local Markdown file.")
+	fmt.Println("  mdcli update      Update Linux Command data.")
 	fmt.Println()
 	fmt.Println("Environment Variables:")
 	fmt.Println("  MDCLI_SOURCE  Path to the md_source directory (default: ./md_source).")

@@ -26,6 +26,12 @@ func GetConfigPath() string {
 	return filepath.Join(home, ".config", "mdcli", "config.yml")
 }
 
+// GetDefaultLinuxCommandPath 获取 linux-command 默认存储路径
+func GetDefaultLinuxCommandPath() string {
+	home, _ := os.UserHomeDir()
+	return filepath.Join(home, ".local", "share", "linux-command")
+}
+
 // LoadConfig 加载配置 (优先当前目录，次之家目录)
 func LoadConfig() (*Config, string, error) {
 	// 定义搜索路径
@@ -48,15 +54,31 @@ func LoadConfig() (*Config, string, error) {
 		}
 	}
 
-	// 如果所有路径都没找到
-	if foundPath == "" {
-		return &Config{}, "", nil
+	var cfg Config
+	if foundPath != "" {
+		err = yaml.Unmarshal(data, &cfg)
+		if err != nil {
+			return nil, foundPath, err
+		}
 	}
 
-	var cfg Config
-	err = yaml.Unmarshal(data, &cfg)
-	if err != nil {
-		return nil, foundPath, err
+	// 注入默认项目 linux-command (始终排在第一位)
+	defaultProject := Project{
+		Name: "Linux Command",
+		Path: GetDefaultLinuxCommandPath(),
+	}
+
+	// 检查是否已经存在同名或同路径项目（避免重复）
+	exists := false
+	for _, p := range cfg.Projects {
+		if p.Path == defaultProject.Path {
+			exists = true
+			break
+		}
+	}
+
+	if !exists {
+		cfg.Projects = append([]Project{defaultProject}, cfg.Projects...)
 	}
 
 	return &cfg, foundPath, nil

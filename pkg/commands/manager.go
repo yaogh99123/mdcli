@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"embed"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -11,20 +10,8 @@ import (
 	"mdcli/pkg/i18n"
 )
 
-var (
-	embeddedDataJSON []byte
-	embeddedCommandFS embed.FS
-)
-
-// SetEmbeddedData 设置嵌入的数据（由主包调用）
-func SetEmbeddedData(data []byte, fs embed.FS) {
-	embeddedDataJSON = data
-	embeddedCommandFS = fs
-}
-
 const (
 	commandDir = "command"
-	embedPrefix = "md_source/command"
 )
 
 // Command 表示命令的索引信息
@@ -40,17 +27,6 @@ type CommandManager struct {
 	localSource string // 本地数据源路径（如果存在）
 }
 
-// NewCommandManager 初始化命令管理器（使用默认路径）
-func NewCommandManager() (*CommandManager, error) {
-	// 优先检测本地数据源
-	localMdSource := os.Getenv("MDCLI_SOURCE")
-	if localMdSource == "" {
-		cwd, _ := os.Getwd()
-		localMdSource = filepath.Join(cwd, "md_source")
-	}
-
-	return NewCommandManagerWithSource(localMdSource)
-}
 
 // NewCommandManagerWithSource 根据指定路径初始化命令管理器
 func NewCommandManagerWithSource(sourcePath string) (*CommandManager, error) {
@@ -81,15 +57,6 @@ func NewCommandManagerWithSource(sourcePath string) (*CommandManager, error) {
 		}
 	}
 
-	// 3. 备选：从嵌入的数据中解析 JSON
-	if len(embeddedDataJSON) > 0 {
-		err := json.Unmarshal(embeddedDataJSON, &cm.commands)
-		if err == nil && len(cm.commands) > 0 {
-			cm.localSource = "" // 标记为嵌入模式
-			fmt.Printf(i18n.T("load_from_embed")+"\n", len(cm.commands))
-			return cm, nil
-		}
-	}
 
 	return nil, fmt.Errorf(i18n.T("data_not_found"), sourcePath)
 }
@@ -165,10 +132,6 @@ func (cm *CommandManager) GetDetail(name string) (string, error) {
 	if cm.localSource != "" {
 		mdPath = filepath.Join(cm.localSource, "command", fmt.Sprintf("%s.md", name))
 		content, err = os.ReadFile(mdPath)
-	} else {
-		// 3. 从嵌入的文件系统读取
-		mdPath = filepath.Join(embedPrefix, fmt.Sprintf("%s.md", name))
-		content, err = embeddedCommandFS.ReadFile(mdPath)
 	}
 
 	if err != nil {

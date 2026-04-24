@@ -61,7 +61,9 @@ func SelectProject(cfg *config.Config) (*config.Project, error) {
 	}
 
 	if input == "" {
-		return nil, nil
+		selected := cfg.Projects[0]
+		fmt.Printf("\n%s%s%s%s\n", ColorBlue+ColorBold, i18n.T("loaded_project"), selected.Name, ColorReset)
+		return &selected, nil
 	}
 
 	idx, err := strconv.Atoi(input)

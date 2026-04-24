@@ -41,6 +41,10 @@ var translations = map[Language]map[string]string{
 		"file_prefix":        "文件: %s",
 		"cmd_not_found":      "命令 '%s' 不存在",
 		"read_doc_failed":    "读取文档失败: %v (路径: %s)",
+		"default_project_missing": "默认项目 Linux Command 未初始化，正在自动下载...",
+		"init_success":       "初始化完成！",
+		"update_success":     "Linux Command 数据更新成功！",
+		"update_failed":      "更新失败",
 	},
 	EN: {
 		"app_title":          "      MDCLI Project Selector",
@@ -68,6 +72,10 @@ var translations = map[Language]map[string]string{
 		"file_prefix":        "File: %s",
 		"cmd_not_found":      "Command '%s' not found",
 		"read_doc_failed":    "Failed to read document: %v (Path: %s)",
+		"default_project_missing": "Default project Linux Command not initialized, downloading automatically...",
+		"init_success":       "Initialization successful!",
+		"update_success":     "Linux Command data updated successfully!",
+		"update_failed":      "Update failed",
 	},
 }
 
