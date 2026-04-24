@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"mdcli/pkg/commands"
 	"mdcli/pkg/config"
@@ -13,6 +15,14 @@ import (
 
 // Run 运行应用程序
 func Run() {
+	// 监听系统信号，确保 Ctrl+C 始终有效
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-sigChan
+		os.Exit(0)
+	}()
+
 	// 加载配置
 	cfg, _, err := config.LoadConfig()
 	if err != nil {
