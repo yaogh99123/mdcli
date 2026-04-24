@@ -59,16 +59,16 @@ func Run() {
 	if len(os.Args) < 2 {
 		for {
 			// 如果有多个项目，进入项目选择界面
-				project, err := ui.SelectProject(cfg)
-				if err != nil {
-					log.Fatalf(i18n.T("init_failed")+": %v", err)
-				}
+			project, err := ui.SelectProject(cfg)
+			if err != nil {
+				log.Fatalf(i18n.T("init_failed")+": %v", err)
+			}
 
-				// 使用选中的项目路径初始化管理器
-				cm, err = commands.NewCommandManagerWithSource(project.Path)
-				if err != nil {
-					log.Fatalf(i18n.T("init_failed")+" '%s': %v", project.Name, err)
-				}
+			// 使用选中的项目路径初始化管理器
+			cm, err = commands.NewCommandManagerWithSource(project.Path)
+			if err != nil {
+				log.Fatalf(i18n.T("init_failed")+" '%s': %v", project.Name, err)
+			}
 
 			// 进入交互式搜索模式
 			err = ui.InteractiveSearch(cm, "")
