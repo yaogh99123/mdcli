@@ -14,7 +14,7 @@ import (
 // Run 运行应用程序
 func Run() {
 	// 加载配置
-	cfg, path, err := config.LoadConfig()
+	cfg, _, err := config.LoadConfig()
 	if err != nil {
 		log.Printf(i18n.T("init_failed")+": %v", err)
 	} else if cfg != nil {
@@ -22,9 +22,9 @@ func Run() {
 		if cfg.Lang != "" {
 			i18n.SetLanguage(cfg.Lang)
 		}
-		if path != "" {
-			fmt.Printf("%s Loaded config: %s %s\n", "\033[90m", path, "\033[0m")
-		}
+		// if path != "" {
+		// 	fmt.Printf("%s Loaded config: %s %s\n", "\033[90m", path, "\033[0m")
+		// }
 	}
 
 	var cm *commands.CommandManager
