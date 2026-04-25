@@ -169,7 +169,7 @@ func Stats(cm *commands.CommandManager) {
 // PrintUsage 打印使用说明
 func PrintUsage() {
 	fmt.Println("mdcli - Markdown CLI Tool")
-	fmt.Println("https://github.com/codetips/mdcli")
+	fmt.Println("https://github.com/yaogh99123/mdcli")
 	fmt.Println()
 	fmt.Println("Flags:")
 	fmt.Printf("  -V --version  Displays the program version string.\n")
